@@ -13,4 +13,4 @@ Presenter: Yu Zhang, Ziyue Wang
    2. kaggle
 7. Referring materials:
    1. https://arxiv.org/abs/1502.05477
-   2. 
+   2. https://jonathan-hui.medium.com/rl-trust-region-policy-optimization-trpo-explained-a6ee04eeeee9
