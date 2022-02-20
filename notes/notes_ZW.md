@@ -255,4 +255,41 @@
          2. So it is less sample efficient compared to other policy gradient method trained with first-order optimizers like Adam. 
          3. To solve this scalability issue: PPO and ACKTR are introduced to address these problems.
    
+   9. Proximal Policy Optimization (PPO)
+   
+      1. quote from PPO paper: *Q-learning (with function approximation) fails on many simple problems and is poorly understood, vanilla policy gradient methods have poor data efficiency and robustness; and trust region policy optimization (TRPO) is relatively complicated, and is not compatible with architectures that include noise (such as dropout) or parameter sharing (between the policy and value function, or with auxiliary tasks).*
+   
+      2. Instead of imposing a hard constraint, it formalizes the constraint as a penalty in the objective function. By not avoiding the constraint at all cost, we can use a first-order optimizer like the gradient descent method to optimize the objective.
+   
+      3. As we already discussed, the original second-order derivative and its inverse are very expensive operation. So we have two ways to address this problem:
+   
+         1. Approximate some calculations involving the second order derivative and its inverse to lower the computational complexity  (TRPO and ACKTR)
+         2. make the first order derivative solution, like the gradient descent, closer to the second-order derivative solution by adding soft constraint  (PPO)
+   
+      4. PPO with adaptive KL Penalty
+   
+         1. $\mathcal{L_\pi(\pi^\prime)} - C \sqrt{E_{s \sim d^\pi [D_{KL}(\pi^\prime||\pi)[s]]}}$ by dynamically adjusting $C$ : If the KL-divergence between the old and the new policy is higher than a target value, we shrink $C$, otherwise we expand $C$. $\rightarrow$ improve the speed closer to the gradient descent method
+   
+      5. PPO with clipped objective
+   
+         1. measure the difference between the new policy and old policy
+   
+            1. $r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_k}(a_t|s_t)}$
+   
+            2. clip the estimated advantage function if the new policy is far away from the old policy
+   
+               $\mathcal{L}_{\theta_k}^{CLIP}(\theta) = E_{\tau \sim \pi_k}[\sum_{t=0}^T[\min(r_t(\theta), clip(r_t(\theta), 1-\epsilon, 1+\epsilon))\hat A_t ^{\pi_k}]]$ , where $\epsilon$ is set to 0.2 in PPO paper.
+   
+      6. PPO adds a soft constraint that can be optimized by a first-order optimizer. We may make some bad decisions once a while but it strikes a good balance on the speed of the optimization. Experimental results prove that this kind of balance achieves the best performance with the most simplicity.
+   
+   10. Actor-Critic using Kronecker-Factored Trust Region (ACKTR)
+   
+       1. ACKTR:
+          1. A policy gradient method with the trust region optmization
+          2. an actor-critic architecture similar to A2C: one deep network to estimate the policy and another network to estimate the advantage function
+          3. Apply the Kronecker-factored approximation to optimize both actor and critic 
+          4. keep a running average of the curvature information
+       2. Kronecker-factored Approximate Curvature (K-FAC)
+          1. Compute Hessian matrix is in the order of $O(n^2)$, which is not feasible for larger deep network models. K-FAC approximates the inverse of FIM and computes the parameter updates one network layer at a time. Each calculation only involves the nodes in a layer instead of all the nodes in the whole model.
+   
    
