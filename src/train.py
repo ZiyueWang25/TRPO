@@ -2,18 +2,19 @@
 
 import argparse
 import sys
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
 import torch
 
 sys.path.append("../tianshou/")
 sys.path.append("../tianshou/examples/mujoco/")
 sys.path.append("../tianshou/examples/atari/")
-from mujoco_ppo import test_ppo as test_ppo_mujoco
-from mujoco_ppo import get_args as get_args_mujoco
-from atari_ppo import test_ppo as test_ppo_atari
-from atari_ppo import get_args as get_args_atari
+import mujoco_ppo
+import mujoco_trpo
+import atari_ppo
 
-class PPO_MUJOCO_Base:
+class PPO_MUJOCO:
     task = "Hopper-v3"
     seed = 0
     buffer_size = 4096
@@ -44,6 +45,31 @@ class PPO_MUJOCO_Base:
     device = "cuda"
     resume_path = None
     watch = False
+    
+class TRPO_MUJOCO(PPO_MUJOCO):
+    # batch-size >> step-per-collect means calculating all data in one singe forward.
+    batch_size = 99999
+    training_num = 16
+    # trpo special
+    rew_norm = True
+    gae_lambda = 0.95
+    optim_critic_iters = 20
+    max_kl = 0.01
+    backtrack_coeff = 0.8
+    max_backtracks = 10
+    
+    
+    
+
+POLICY_DICT = {
+    "ppo": {
+        "mujoco": (mujoco_ppo.test_ppo, mujoco_ppo.get_args),
+        "atari": (atari_ppo.test_ppo, atari_ppo.get_args),
+    },
+    "trpo": {
+        "mujoco": (mujoco_trpo.test_trpo, mujoco_trpo.get_args),
+    }
+}
 
 MUJOCO_GAME_DICT = {
     "swimmer": "Swimmer-v3",
@@ -63,21 +89,23 @@ ATARI_GAME_DICT = {
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('--method', type=str, default='ppo')
     parser.add_argument('--task', type=str, default='swimmer')
     parser.add_argument(
         '--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu'
     )
     parser.add_argument('--logdir', type=str, default='../log')    
     u_args = parser.parse_args()
+    method = u_args.method
     if u_args.task in MUJOCO_GAME_DICT.keys():
-        test_fnc = test_ppo_mujoco
-        get_args = get_args_mujoco
+        test_fnc, get_args = POLICY_DICT[method]["mujoco"]
+        task = MUJOCO_GAME_DICT[u_args.task]
     else:
-        test_fnc = test_ppo_atari
-        get_args = get_args_atari
-        
+        test_fnc, get_args = POLICY_DICT[method]["atari"]
+        task = ATARI_GAME_DICT[u_args.task]
+    sys.argv = ["-m"] # to avoid passing the system args down the line
     args = get_args()        
-    args.task = MUJOCO_GAME_DICT[u_args.task] if u_args.task in MUJOCO_GAME_DICT else ATARI_GAME_DICT[u_args.task]
+    args.task = task
     args.logdir = u_args.logdir
     args.device = u_args.device
     test_fnc(args)
