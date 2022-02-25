@@ -2,6 +2,7 @@
 rl-baselines3-zoo/
 log/
 model/
+tianshou/
 
 __pycache__/
 *.py[cod]
