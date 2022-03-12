@@ -1,4 +1,9 @@
 # Byte-compiled / optimized / DLL files
+rl-baselines3-zoo/
+log/
+model/
+tianshou/
+
 __pycache__/
 *.py[cod]
 *$py.class
