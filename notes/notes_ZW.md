@@ -167,29 +167,29 @@
    
             ![](../pictures/is.png)
    
-      5. Conjugate Gradient (CG)
+   5. Conjugate Gradient (CG)
    
-         ![](../pictures/cg.png)
+      ![](../pictures/cg.png)
    
-         1. solve a linear equation or optimize a quadratic equation. more efficient in solving those problems than the gradient descent.
+      1. solve a linear equation or optimize a quadratic equation. more efficient in solving those problems than the gradient descent.
    
-            1. When $A$ is symmetrical and positive definite, solving $Ax = b$  is equivalent to $\max_x f(x) = \frac{1}{2}x^TAx - b^Tx$, since $f^\prime(x) = Ax - b = 0$
+         1. When $A$ is symmetrical and positive definite, solving $Ax = b$  is equivalent to $\max_x f(x) = \frac{1}{2}x^TAx - b^Tx$, since $f^\prime(x) = Ax - b = 0$
    
-         2. CG method is a line search method without undoing part of the moves done previously. It optimizes a quadratic equation in fewer step than the gradient ascent. 
+      2. CG method is a line search method without undoing part of the moves done previously. It optimizes a quadratic equation in fewer step than the gradient ascent. 
    
-            ![](../pictures/cg2.png)
+         ![](../pictures/cg2.png)
    
-            1. start the ascent in one particular direction
+         1. start the ascent in one particular direction
    
-            2. settle down in the optimal point for that direction
+         2. settle down in the optimal point for that direction
    
-            3. find a new direction $d_j$ which is conjugate to any previous moving directions $d_i$
+         3. find a new direction $d_j$ which is conjugate to any previous moving directions $d_i$
    
-               1. $d_{i}^T A d_j = 0$, where $A$ is the matrix in the quadratic euqation.
+            1. $d_{i}^T A d_j = 0$, where $A$ is the matrix in the quadratic euqation.
    
-                  ![](../pictures/cg3.png)
+               ![](../pictures/cg3.png)
    
-   5. TRPO Optimization Problem
+   6. TRPO Optimization Problem
    
       1. $\max_{\pi^\prime} J(\pi^\prime) = \max_{\pi^\prime} J(\pi^\prime) - J(\pi)$, here reward function notation changed from $\eta$ to $J$ 
    
@@ -199,7 +199,7 @@
    
          1. $D_{KL}(P||Q) = \sum_{x=1}^N P(x)log\frac{P(x)}{Q(x)}$
          2. $\mathcal{L_\pi(\pi^\prime)} = \frac{1}{1-\gamma}E_{s\sim d^\pi, a \sim \pi}[\frac{\pi^\prime(a|s)}{\pi(a|s)}A^\pi(s,a)] = E_{\tau\sim\pi}[\sum_{t=0}^\infty \gamma^t\frac{\pi^\prime(a_t|s_t)}{\pi(a_t|s_t)}A^\pi(s_t,a_t)]$
-            1. Discounted future state distribution$d^\pi(s) = (1-\gamma) \sum_{t=0}^\infty \gamma^tP(s_t=s|\pi)$
+            1. Discounted future state distribution $d^\pi(s) = (1-\gamma) \sum_{t=0}^\infty \gamma^tP(s_t=s|\pi)$
    
       4. With some twisting we can get $J(\pi^{\prime}) - J(\pi) \ge  \mathcal{L_\pi(\pi^\prime)} - C \sqrt{E_{s \sim d^\pi [D_{KL}(\pi^\prime||\pi)[s]]}}$
    
@@ -213,20 +213,20 @@
    
          $\max_{\pi^\prime} \mathcal{L}_\pi(\pi^\prime), s.t. E_{s\sim d^\pi}[D_{KL}(\pi^\prime||\pi)[s]]\le \delta$
    
-   6. Natural Policy Gradient
+   7. Natural Policy Gradient
    
       1. $\pi_{k+1} = \arg\max_{\pi^\prime}\mathcal{L}_{\pi_k}(\pi^\prime), s.t. \bar D_{KL}(\pi^\prime || \pi_k) \le \delta$
       2. use Taylor's series to expand both terms above up to the second-order. But the second-order of $\mathcal{L}$ is much smaller than the KL-divergence term and will be ignored
          1. $\mathcal{L}_{\theta_k}(\theta) \approx \mathcal{L}_{\theta_k}(\theta_k) + g^T(\theta - \theta_k) +  \dots \approx g^T(\theta - \theta_k)$, $g$ is the policy gradient
          2. $\bar D_{KL}(\theta || \theta_k) \approx \bar D_{KL}(\theta_k || \theta_k) + \nabla_\theta \bar D_{KL}(\theta || \theta_k)|_{\theta_k}(\theta - \theta_k) + \frac{1}{2} (\theta - \theta_k) ^ T H (\theta -\theta_k) \approx  \frac{1}{2} (\theta - \theta_k) ^ T H (\theta -\theta_k)$, $H$ measure the sensitivity (curvature) of the policy relative to the model parameter $\theta$
       3.  $\theta_{k + 1} = \arg\max_\theta g^T(\theta-\theta_k), s.t. \frac{1}{2} (\theta - \theta_k) ^ T H (\theta -\theta_k) \le \delta$
-         1. this can be solved analytically $\theta_{k+1} = \theta_k + \sqrt{\frac{2\delta}{g^TH^{-1}g}}H^{-1}g$, where $H^{-1}g$ maps the cahnges we want in the policy space into the corresponding parameter space
+         1. this can be solved analytically $\theta_{k+1} = \theta_k + \sqrt{\frac{2\delta}{g^TH^{-1}g}}H^{-1}g$, where $H^{-1}g$ maps the changes we want in the policy space into the corresponding parameter space
          2.  natural gradient $\sqrt{\frac{2\delta}{g^TH^{-1}g}}H^{-1}g$  generates the parameter changes that can map to the same policy change, therefore it is model invarient (?). Also, it is a second order optimization so that it is more accurate.
       4. $H$ is a Hessian matrix and here it measures the curvature of the log probability of the policy. We can use a special term for it: **Fisher Information Matrix (FIM)**, it can be computed like below:
          1. $F = E_{s, a \sim \theta ^ k}[\nabla_\theta log_{\pi_\theta}(a|s)|_{\theta_k} \nabla_\theta log_{\pi_\theta}(a|s)|_{\theta_k}^T ]$
       5. Limitation: inverse of H is expensive and numerical unstable
    
-   7. Trucated Natural Policy Gradient
+   8. Trucated Natural Policy Gradient
    
       1. Computed combined term directly without inverse FIM
       2. $x_k \approx \hat H_k^{-1} \hat g_k$, where $x$ can be solved as $\hat H_k x_k \approx \hat g$
@@ -235,7 +235,7 @@
          2. $\min_x \frac{1}{2} x^T H x - g^T x$
          3. solve it by using conjugate gradient method 
    
-   8. TRPO
+   9. TRPO
    
       1. applies conjugate gradient method to the natural policy gradient with the following adjustment:
    
@@ -255,7 +255,7 @@
          2. So it is less sample efficient compared to other policy gradient method trained with first-order optimizers like Adam. 
          3. To solve this scalability issue: PPO and ACKTR are introduced to address these problems.
    
-   9. Proximal Policy Optimization (PPO)
+   10. Proximal Policy Optimization (PPO)
    
       1. quote from PPO paper: *Q-learning (with function approximation) fails on many simple problems and is poorly understood, vanilla policy gradient methods have poor data efficiency and robustness; and trust region policy optimization (TRPO) is relatively complicated, and is not compatible with architectures that include noise (such as dropout) or parameter sharing (between the policy and value function, or with auxiliary tasks).*
    
@@ -282,7 +282,7 @@
    
       6. PPO adds a soft constraint that can be optimized by a first-order optimizer. We may make some bad decisions once a while but it strikes a good balance on the speed of the optimization. Experimental results prove that this kind of balance achieves the best performance with the most simplicity.
    
-   10. Actor-Critic using Kronecker-Factored Trust Region (ACKTR)
+   11. Actor-Critic using Kronecker-Factored Trust Region (ACKTR)
    
        1. ACKTR:
           1. A policy gradient method with the trust region optmization
