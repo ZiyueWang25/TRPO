@@ -58,7 +58,10 @@ class TRPO_MUJOCO(PPO_MUJOCO):
     backtrack_coeff = 0.8
     max_backtracks = 10
     
-    
+class TRPO_MUJOCO_Swimmer(TRPO_MUJOCO):
+    step_per_epoch = int(5e4)
+    hidden_sizes = [30]
+    gamma = 0.99
     
 
 POLICY_DICT = {
