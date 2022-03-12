@@ -1,5 +1,7 @@
 # Study Notes about Tianshou
 
+[toc]
+
 # Policy 
 
 1. General:
@@ -132,6 +134,59 @@
 # Trainer
 
 1. `onpolicy_trainer`
+
+   1. parameters:
+
+      1. `policy`
+      2. `train_collector`
+      3. `test_collector`
+      4. `max_epoch`
+      5. `step_per_epoch`: the number of transitions collected per epoch
+      6. `repeat_per_collect`: the number of repeat time for policy learning. Eg. set it to 2 means the policy needs to learn each given batch data twice
+      7. `episode_per_test`
+      8. `batch_size`: the batch size of sample data, which is going to feed in the policy network
+      9. `step_per_collect`: the number of transitions the collector would collect before the network update. Only either one of step_per_collect and episode_per_collect can be specified.
+      10. `episode_per_collect`: the number of episodes the collector would collect before the network update. Only either one of step_per_collect and episode_per_collect can be specified.
+      11. `train_fn`: a hook called at the beginning of training in each epoch.  It can be used to perform custom additional operations, with the signature ``f(num_epoch: int, step_idx: int) -> None``.
+      12. `test_fn`
+      13. `save_fn`: a hook called when the undiscounted average mean reward in evaluation phase gets better, with the signature `f(policy: BasePolicy) -> None`
+      14. `save_checkpoint_fn`: a function to save training process, with the signature ``f(epoch: int, env_step: int, gradient_step: int) -> None``; you can save whatever you want.
+      15. `resume_from_log`:  resume env_step/gradient_step and other metadata from existing tensorboard log. Default to False.
+      16. `stop_fn`:  a function with signature ``f(mean_rewards: float) -> bool``, receives the average undiscounted returns of the testing result, returns a boolean which indicates whether reaching the goal.
+      17. `reward_metric`:  a function with signature ``f(rewards: np.ndarray with shape (num_episode, agent_num)) -> np.ndarray with shape (num_episode,)``, used in multi-agent RL. We need to return a single scalar for each episode's result to monitor training in the multi-agent RL setting. This function specifies what is the desired metric, e.g., the reward of agent 1 or the average reward over all agents.
+      18. `logger`
+      19. `verbose`
+      20. `test_in_train`: whether to test in the training phase. Default to True.
+
+   2. key code:
+
+      1. ```                python
+         losses = policy.update(
+             sample_size=0,
+             buffer=train_collector.buffer,
+             batch_size=batch_size,
+             repeat=repeat_per_collect
+         )
+         ```
+
 2. `offpolicy_trainer`
+
+   1. parameters:
+
+      1. no `episode_per_collect`
+      2. `update_per_step` : the number of times the policy network would be updated per transition after (step_per_collect) transitions are collected, e.g., if update_per_step set to 0.3, and step_per_collect is 256, policy will be updated round(256 * 0.3 = 76.8) = 77 times after 256 transitions are collected by the collector. Default to 1.
+
+   2. key code:
+
+      1. ```                python
+         losses = policy.update(
+             sample_size=batch_size,
+             buffer=train_collector.buffer
+         )
+         ```
+
 3. `offline_trainer`
-4. 
+
+   1. parameter:
+      1. `update_per_epoch`:  the number of policy network updates, so-called gradient steps, per epoch.
+
