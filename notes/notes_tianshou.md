@@ -89,6 +89,15 @@
 
 1. `DQNPolicy(BasePolicy)`
 
+   1. `__init__`	:
+      1. `target_update_freq`:  the target network update frequency (0 if you do not use the target network). Default to 0.
+      2. `is_double`:  use double dqn. Default to True.
+   2. `sync_weight`:  Synchronize the weight for the target network.
+   3. `_target_q(self, buffer: ReplayBuffer, indices: np.ndarray) -> torch.Tensor:`
+   4.  `forward(self, batch, state, model, input)`
+   5. `learn(self, batch,**kawargs) -> Dict[str, float]`
+   6. `exploration_noise`
+
 2. `QRDQNPolicy(DQNPolicy)`
 
 3. `FQFPolicy(QRDQNPolicy)`
