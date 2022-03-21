@@ -20,14 +20,14 @@ class PPO_MUJOCO:
     buffer_size = 4096
     hidden_sizes = [64, 64]
     lr = 3e-4
-    gamma = 0.99
+    gamma = 0.99 # discount factor
     epoch = 100
-    step_per_epoch = int(3e5)
-    step_per_collect = 2048
-    repeat_per_collect = 10
+    step_per_epoch = int(3e5) # the number of transitions collected per epoch
+    step_per_collect = 2048 # the number of transitions the collector would collect before the network update.
+    repeat_per_collect = 10 #  the number of repeat time for policy learning. Eg. set it to 2 means the policy needs to learn each given batch data twice
     batch_size = 64
-    training_num = 64
-    test_num = 10
+    training_num = 64 # parallel data collection
+    test_num = 10 # episode_per_test
     rew_norm = True # ppo special
     vf_coef = 0.25 # in theory, "vf-coef" won't make any difference if using Adam Optimizer
     ent_coef = 0 
@@ -51,17 +51,17 @@ class TRPO_MUJOCO(PPO_MUJOCO):
     batch_size = 99999
     training_num = 16
     # trpo special
-    rew_norm = True
-    gae_lambda = 0.95
     optim_critic_iters = 20
     max_kl = 0.01
     backtrack_coeff = 0.8
     max_backtracks = 10
-    
+        
 class TRPO_MUJOCO_Swimmer(TRPO_MUJOCO):
     step_per_epoch = int(5e4)
     hidden_sizes = [30]
     gamma = 0.99
+    step_per_epoch = int(50e3)
+    step_per_collect = 200
     
 
 POLICY_DICT = {
@@ -97,6 +97,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu'
     )
+    parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--logdir', type=str, default='../log')    
     u_args = parser.parse_args()
     method = u_args.method
@@ -111,4 +112,5 @@ if __name__ == "__main__":
     args.task = task
     args.logdir = u_args.logdir
     args.device = u_args.device
+    args.seed = u_args.seed
     test_fnc(args)
